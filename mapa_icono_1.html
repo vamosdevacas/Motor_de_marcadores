@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gestion Marcadores 1</title>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    
+    <style type="text/css">
+      /*Estilos importantes para que aparezca el mapa*/
+      html { height: 100% }
+       
+      body { height: 100%; margin: 0; padding: 0; padding: 20px; }
+      
+      div { /*display: inline-block;*/}
+
+      #contenedor{/*border: 1px solid red;*/ height: 100%; margin: auto; }
+
+      #mapa { /*border: 1px solid red;*/ float: left; width:600px; height:600px;}
+
+      #info {/*border: 1px solid red;*/ float: left;}
+
+    </style>
+    <!-- estilos perzonalizados -->
+	<link rel="stylesheet" type="text/css" href="css/estilos.css"> 
+    <!-- estilos bootstrap -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"> 
+    <!-- Carga de Jquery -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <!-- Carga de Google Maps -->
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <!-- Carga del javascript Bootstrap -->
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <!-- Prueba de Jquery -->
+    <script type="text/javascript">
+
+
+    //variables generales
+
+    //array para almacenar nuevos marcadores
+    var marcadores_nuevos = [];
+
+    //funcion para quitar marcadores de mapa
+    function quitar_marcadores(lista){
+
+    		//recorrer el array de marcadores
+    		for(i in lista)
+    		{
+    			//quitar marcador de la lista
+    			lista[i].setMap(null);
+    		}
+    }
+
+
+    	$(document).on("ready", function(){//cuando el documento este listo por jquery
+
+		    //==Inicializar el mapa==
+
+    		//alert("hola desde la funcion x");
+
+    		//esta variable contiene la informacion que debe llevar un punto en el mapa para poderlo visualizar
+    		var punto = new google.maps.LatLng(4.63301,-74.07210);
+    		//	alert("carga punto");
+    		//esta variable es la configuracion inicial del mapa
+    		var config = {
+
+    			center: new google.maps.LatLng(4.63301, -74.07210),
+		        zoom: 18,
+		        mapTypeId: google.maps.MapTypeId.ROADMAP
+    		};
+    		//	alert("carga config");
+    		//variable mapa en donde se indica en donde aparece el mapa y que opciones tiene
+    		//en este se selecciona el mapa por jquery
+
+    		var mapa = new google.maps.Map($('#mapa')[0],config);
+
+    		//--------------------------------------------------
+    		//variable para seleccionar el formulario
+
+    		var formulario = $("#form_map");//seleccion del formulario por jquery
+
+    		//--------------------------------------------------
+
+    		//alert("carga mapa");
+
+    		//=======================================================================================================
+
+		    //==Para agregar un evento click al mapa==
+
+    		/*google.maps.event.addListener(mapa, 'click', function() {
+		    alert("click");
+		  });*/
+
+			//=======================================================================================================
+				//marcador inicializacion
+
+				var icono_v = 'icono7.png';
+
+		    	var marcador_vacas = new google.maps.Marker({
+		    		position:punto,//es igual a las coordenadas que sacamos en el click y se separaron
+		    		map:mapa,//la variable mapa que se hace en la inicializacion o el mapa en que se quiera poner el marcador
+		    		animation: google.maps.Animation.DROP,//como va a aparecer el marcador
+		    		icon: icono_v//la ruta de la imagen que va a hacer de icono
+		    	});
+
+		    	marcador_vacas.setMap(mapa);
+
+		    //=======================================================================================================
+		    
+		    	//infowindow o ventana de irformacion de cada marcador	
+
+		    	//mensaje que va a llevar el marcador, puede tener texto o codigo
+		    	var contenido = 'Esto es <a href="http://www.vamosdevacas.com/" target="_blank">vamosdevacas.com</a><br/><img src="icono8.png"><br/>El sitio de tus vacaciones.';
+
+		    	//este es el objeto InfoWindow que es mi ventana y le asigno el contenido de antes.
+		    	var ventana = new google.maps.InfoWindow({
+				    content: contenido
+				  });
+
+		    	
+		    	//se agrega un evento listener en click para el marcador que ejecute la funcion de abrir la ventana en el mapa en el marcador_vacas
+		    	google.maps.event.addListener(marcador_vacas, 'click', function() {
+					    ventana.open(mapa, marcador_vacas);
+					});
+		    //=======================================================================================================
+		    
+
+			//=======================================================================================================
+    		//AL PRESIONAR OK ENVIA LOS DATOS A LA BASE
+    		
+    		
+    		$("#ok").on("click",function(){
+    			//ejecutar funcion para guardar los datos en la base
+			alert(formulario.find("input[name='titulo']").val());
+			});
+
+			$("#cancelar").on("click",function(){
+				//cancelar el guardado en la base
+				alert("Cancelar ha sido presionado.");
+			});
+
+    		//=======================================================================================================
+
+		    //esto es lo que pasa cuando se da click al mapa	
+    		google.maps.event.addListener(mapa, 'click', function(event) {
+		    	
+		    	//validacion del titulo del marcador
+		    	//mensaje que va a llevar el marcador, puede tener texto o codigo
+		    	var titulo_info = formulario.find("input[name='titulo']").val();//toma el valor de la caja de texto donde se coloca el titulo.
+
+
+
+if(titulo_info=="") {
+
+		alert("Por favor indique el nombre del marcador.");
+		formulario.find("input[name='titulo']").focus();
+
+			} 
+
+		else {
+		    	//el evento click en el mapa da un parametro event
+		    	//que es el que devuelve las coordenadas
+		    	//alert(event.latLng); //el tipo de dato debe ser latLng si no no funciona
+				
+				
+		    	//quiere cambiar el nombre?
+
+		    	
+				    if (confirm("Desea cambiar el nombre del marcador?") == true) {
+				        titulo_info=prompt("Tiulo del marcador");
+						formulario.find("input[name='titulo']").val(titulo_info);
+						crear_marcador();
+				    } 
+
+				    else {
+				        
+				        crear_marcador();
+				    }
+				    
+				
+
+				//=======================================================================================================
+				
+function crear_marcador()
+
+			{
+		    	//==Captura de coordenadas==
+
+		    	//ahora hay que obteber las coordenadas por separado ya capturando las por el evento
+		    	var coordenadas = event.latLng.toString();
+		    	//se reemplazan los parentesis por espacios
+		    	coordenadas = coordenadas.replace("(","");
+		    	coordenadas = coordenadas.replace(")","");
+
+		    	//se separan las coordenadas
+
+		    	//se utiliza una variable lista que toma la variable coordenadas y la separa en la coma(,) en una matriz
+		    	var lista = coordenadas.split(",");
+
+		    	//muestra cada lugar en la matriz lista como coordenada x,y
+		    	//alert("La coordenada x = "+lista[0] +" la coordenada y = "+lista[1]);
+
+		    	//=======================================================================================================
+
+		    	//==Creacion de un marcador==
+
+		    	//variable de coordenada o direccion
+		    	var direccion = new google.maps.LatLng(lista[0],lista[1]);
+		    	//variable de la imagen del marcador que contiene la ruta
+		    	var icono = 'icono6.png';
+		    	//variable de marcador
+		    	var marcador = new google.maps.Marker({
+		    		position:direccion,//es igual a las coordenadas que sacamos en el click y se separaron
+		    		map:mapa,//la variable mapa que se hace en la inicializacion o el mapa en que se quiera poner el marcador
+		    		animation: google.maps.Animation.DROP,//como va a aparecer el marcador
+		    		icon: icono
+		    	});
+
+		    	//-------------------------------------------------------
+		    	//pasar los datos al formulario
+		    	formulario.find("input[name='cx']").val(lista[0]);
+		    	formulario.find("input[name='cy']").val(lista[1]);
+		    	formulario.find("input[name='titulo']").focus();
+		    	//-------------------------------------------------------
+
+		    	//dejar solo un marcador en el mapa 
+		    	//guardar el marcador en el array
+
+		    	marcadores_nuevos.push(marcador);
+
+		    	//--------------------------------------------------------
+
+		    	//antes de ubicar el marcador en el mapa quitar todos los demas
+		    	//y asi solo dejar 1
+
+		    	quitar_marcadores(marcadores_nuevos);//funcion para quitar marcadores
+
+		    	//--------------------------------------------------------
+
+		    	//ubicar el marcador en el mapa
+		    	marcador.setMap(mapa);//se indica el marcador,y en que mapa
+
+		    	//=======================================================================================================
+
+		    	//==Añadir evento click al marcador==
+		    	
+		    	var contenido_1 = titulo_info + '<br/>'+coordenadas;
+		    	
+		    	var ventana_1 = new google.maps.InfoWindow({
+				    content: contenido_1
+				  });
+
+		    	//=======================================================================================================
+
+
+		    	google.maps.event.addListener(marcador,"click",function(){
+
+		    		ventana_1.open(mapa, marcador);
+
+		    	});
+
+		    }
+
+
+		    	//=======================================================================================================
+		    }
+		    	
+
+		 	});	
+
+			
+    	});
+	
+
+  </script>
+
+</head>
+<body>
+
+<h1>Gestion de Marcadores</h1>
+
+	
+<div id="contenedor">
+
+	<div id="mapa" style=""></div>
+
+	<div id="info">
+
+	 	<div class="panel-group" id="accordion">
+		  <div class="panel panel-default">
+		    <div class="panel-heading">
+		      <h4 class="panel-title">
+		        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+		          Agregar
+		        </a>
+		      </h4>
+		    </div>
+		    <div id="collapseOne" class="panel-collapse collapse in">
+		      <div class="panel-body">
+		        <!-- Formulario -->
+
+		        <form id="form_map">
+		        	
+			        <table>
+			        		
+			        	<tr>			        		
+			        		<td>Titulo &nbsp; </td>
+			        		<td><input id="titulo" type="text" class="form-control" name="titulo" autocomplete="off"/></td>
+			        	</tr>
+
+			        	<tr>			        		
+			        		<td>Coordenada x &nbsp; </td>
+			        		<td><input type="text" class="form-control" disabled="disabled" name="cx" autocomplete="off"/></td>
+			        	</tr>
+
+			        	<tr>			        		
+			        		<td>Coordenada y &nbsp; </td>
+			        		<td><input type="text" class="form-control" disabled="disabled" name="cy" autocomplete="off"/></td>
+			        	</tr>
+
+			        	<tr>			        		
+			        		<td><button id="ok" type="button" class="btn btn-success">Guardar</button></td>
+			        		<td><button id="cancelar" type="button" class="btn btn-danger">Cancelar</button></td>
+			     		</tr>
+
+			        </table>
+
+		        </form>
+
+		      </div>
+		    </div>
+		  </div>
+		  <div class="panel panel-default">
+		    <div class="panel-heading">
+		      <h4 class="panel-title">
+		        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+		          Editar
+		        </a>
+		      </h4>
+		    </div>
+		    <div id="collapseTwo" class="panel-collapse collapse">
+		      <div class="panel-body">
+		        Anim pariatur 
+		      </div>
+		    </div>
+		  </div>
+		  <div class="panel panel-default">
+		    <div class="panel-heading">
+		      <h4 class="panel-title">
+		        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+		          Eliminar
+		        </a>
+		      </h4>
+		    </div>
+		    <div id="collapseThree" class="panel-collapse collapse">
+		      <div class="panel-body">
+		        Anim pariatur 
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+	</div>
+</div>
+
+
+</body>
+</html>
